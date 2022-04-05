@@ -56,32 +56,30 @@ app.get(['', '/login'], (req, res) => {
     })
 })
 
-app.get('/sensor-dashboard', (req, res) => {
-    //if (session.username) {
-    res.render('sensor-dashboard', {
-            title: 'Sensor Dashboard',
-            //name: session.username
-            name: 'Gautam Kumar'
+app.get('/temperature-dashboard', (req, res) => {
+    if (session.username) {
+        res.render('temperature-dashboard', {
+            title: 'Temperature Dashboard',
+            name: session.username
         })
-        // } else {
-        //     res.render('login', {
-        //         message: 'Please login first!'
-        //     })
-        // }
+    } else {
+        res.render('login', {
+            message: 'Please login first!'
+        })
+    }
 })
 
 app.get('/user-dashboard', (req, res) => {
-    //if (session.username) {
-    res.render('user-dashboard', {
+    if (session.username) {
+        res.render('user-dashboard', {
             title: 'User Dashboard',
-            //name: session.username
-            name: 'Gautam Kumar'
+            name: session.username
         })
-        // } else {
-        //     res.render('login', {
-        //         message: 'Please login first!'
-        //     })
-        // }
+    } else {
+        res.render('login', {
+            message: 'Please login first!'
+        })
+    }
 })
 
 app.get('/users', (req, res) => {

@@ -212,13 +212,13 @@ body {
 }
 
 .btn-success {
-    background-color: #00ab9f;
-    border-color: #00ab9f;
+    background-color: #f2125e !important;
+    border-color: #f2125e !important;
 }
 
 .btn-success:hover {
-    background-color: #00ab9f !important;
-    border-color: #00ab9f !important;
+    background-color: #f2125e !important;
+    border-color: #f2125e !important;
 }
 
 .btn-success:active {
@@ -384,7 +384,7 @@ input[class="form-control error"] {
 }
 
 .box-de {
-    background-color: rgba(0, 171, 159, 0.73);
+    background-color: #f2125e;
     display: flex;
 }
 

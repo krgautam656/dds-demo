@@ -811,6 +811,42 @@
             ]
         })
 
+        var buttons = new $.fn.dataTable.Buttons(userTable, {
+            buttons: [{
+                    extend: 'copyHtml5',
+                    text: '<i class="fa fa-files-o"></i>',
+                    titleAttr: 'Copy',
+                    exportOptions: {
+                        columns: 'th:not(:last-child)'
+                    }
+                },
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="fa fa-file-excel-o"></i>',
+                    titleAttr: 'Excel',
+                    exportOptions: {
+                        columns: 'th:not(:last-child)'
+                    }
+                },
+                {
+                    extend: 'csvHtml5',
+                    text: '<i class="fa fa-file-text-o"></i>',
+                    titleAttr: 'CSV',
+                    exportOptions: {
+                        columns: 'th:not(:last-child)'
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="fa fa-file-pdf-o"></i>',
+                    titleAttr: 'PDF',
+                    exportOptions: {
+                        columns: 'th:not(:last-child)'
+                    }
+                }
+            ]
+        }).container().appendTo($('#user-report-export'));
+
         $('#detailsTable tbody').on('click', 'td.editor-edit', function() {
             var row = $(this).closest('tr');
 
@@ -918,91 +954,6 @@
                 })
             }
         })
-
-        var lastDate = 0
-        var data = []
-        var TICKINTERVAL = 86400000
-        let XAXISRANGE = 777600000
-        var options = {
-            series: [{
-                data: data.slice()
-            }],
-            chart: {
-                id: 'realtime',
-                height: 350,
-                type: 'line',
-                animations: {
-                    enabled: true,
-                    easing: 'linear',
-                    dynamicAnimation: {
-                        speed: 1000
-                    }
-                },
-                toolbar: {
-                    show: false
-                },
-                zoom: {
-                    enabled: false
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                curve: 'smooth'
-            },
-            title: {
-                text: 'Dynamic Updating Chart',
-                align: 'left'
-            },
-            markers: {
-                size: 0
-            },
-            xaxis: {
-                type: 'datetime',
-                range: XAXISRANGE,
-            },
-            yaxis: {
-                max: 100
-            },
-            legend: {
-                show: false
-            },
-        };
-
-        var chart = new ApexCharts(document.querySelector("#sensorchart"), options);
-        chart.render();
-
-        window.setInterval(function() {
-            getNewSeries(lastDate, {
-                min: 10,
-                max: 90
-            })
-
-            chart.updateSeries([{
-                data: data
-            }])
-        }, 1000)
-
-        var seconds = new Date().getTime() / 1000;
-
-        function getNewSeries(baseval, yrange) {
-            var newDate = baseval + TICKINTERVAL;
-            lastDate = newDate
-
-            for (var i = 0; i < data.length - 10; i++) {
-                // IMPORTANT
-                // we reset the x and y of the data which is out of drawing area
-                // to prevent memory leaks
-                data[i].x = newDate - XAXISRANGE - TICKINTERVAL
-                data[i].y = 0
-            }
-
-            data.push({
-                x: newDate,
-                y: Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min
-            })
-        }
 
     });
 })(jQuery);

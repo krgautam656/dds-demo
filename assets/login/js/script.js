@@ -123,7 +123,7 @@ $(document).ready(function() {
                 dataType: "json",
                 success: (response) => {
                     $('#login')[0].reset()
-                    window.location.href = '/dashboard'
+                    window.location.href = '/user-dashboard'
                 },
                 error: (jqXHR, textStatus, errorThrown) => {
                     document.getElementById("check").innerHTML = jqXHR.responseJSON.message
