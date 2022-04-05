@@ -18,6 +18,8 @@
   <link rel="shortcut icon" href="images/favicon.png" />
   <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" type="text/css" href="css/loading-bar.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
 <body>
@@ -25,8 +27,8 @@
     <!-- partial:partials/_navbar.html -->
     <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
       <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
-        <a class="navbar-brand brand-logo" href="/dashboard"><img src="images/logo.svg" alt="logo" /></a>
-        <a class="navbar-brand brand-logo-mini" href="/dashboard"><img src="images/logo-mini.svg" alt="logo" /></a>
+        <a class="navbar-brand brand-logo" href="/temperature-dashboard"><img src="images/logo.png" alt="logo" /></a>
+        <a class="navbar-brand brand-logo-mini" href="/temperature-dashboard"><img src="images/logo-mini.png" alt="logo" /></a>
         <button class="navbar-toggler navbar-toggler align-self-center d-none d-lg-flex" type="button"
           data-toggle="minimize">
           <span class="typcn typcn-th-menu"></span>
@@ -36,7 +38,7 @@
         <ul class="navbar-nav navbar-nav-right">
           <li class="nav-item nav-profile dropdown">
             <a class="nav-link dropdown-toggle  pl-0 pr-0" href="#" data-toggle="dropdown" id="profileDropdown">
-              <i class="typcn typcn-user-outline mr-0"></i>
+              <i class="fa fa-user-circle mr-0"></i>
               <span class="nav-profile-name">{{name}}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
@@ -44,7 +46,7 @@
                 <i class="typcn typcn-cog text-primary"></i>
                 Profile
               </a>
-              <a class="dropdown-item">
+              <a class="dropdown-item" href="/logout">
                 <i class="typcn typcn-power text-primary"></i>
                 Logout
               </a>
@@ -77,9 +79,9 @@
             <p class="sidebar-menu-title">Dash menu</p>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/sensor-dashboard">
+            <a class="nav-link" href="/temperature-dashboard">
               <i class="typcn icon typcn-weather-snow menu-icon"></i>
-              <span class="menu-title">Sensor Dashboard</span>
+              <span class="menu-title">Temperature Dashboard</span>
             </a>
           </li>
           <li class="nav-item">
@@ -103,13 +105,28 @@
             </div>
           </div>
           <div class="row">
-            <div class="col-lg-12 d-flex grid-margin stretch-card">
+            <div class="col-lg-8 d-flex grid-margin stretch-card">
               <div class="card">
                 <div class="card-body">
                   <div class="d-flex flex-wrap justify-content-between">
-                    <h4 class="card-title mb-3">Temperature Chart</h4>
+                    <h4 class="card-title mb-4">Temperature Chart</h4>
                   </div>
                   <div id="linechart"></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4 d-flex grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex flex-wrap justify-content-between">
+                    <h4 class="card-title mb-3">Average Temperature</h4>
+                  </div>
+                  <h4 style="color: #52b5f1;">Room Temp. 1</h4>
+                  <div data-preset="fan" class="roomTemp1 label-center" data-value="35" style="width: auto; height: auto;"></div>
+                  <h4 style="color: #00e396;">Room Temp. 2</h4>
+                  <div data-preset="fan" class="roomTemp2 label-center" data-value="35" style="width: auto; height: auto;"></div>
+                  <h4 style="color: #feb019;">Room Temp. 3</h4>
+                  <div data-preset="fan" class="roomTemp3 label-center" data-value="35" style="width: auto; height: auto;"></div>
                 </div>
               </div>
             </div>
@@ -266,6 +283,7 @@
   <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
   <!-- End custom js for this page-->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script type="text/javascript" src="js/loading-bar.min.js"></script>
 </body>
 
 </html>
