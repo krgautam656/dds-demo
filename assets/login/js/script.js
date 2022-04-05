@@ -132,74 +132,9 @@ $(document).ready(function() {
         }
     })
 
-    $('#datepicker').datepicker({
-        uiLibrary: 'bootstrap',
-        format: 'dd/mm/yyyy'
-    })
-
-    $('#sandbox-container').datepicker({
-        format: "dd/mm/yyyy",
-        autoclose: true,
-        todayHighlight: true
+    $("#datepicker").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: 'dd/mm/yy'
     });
-
-    let userTable = $('#detailsTable').DataTable({
-        'processing': true,
-        'serverSide': true,
-        'pageLength': 5,
-        'lengthMenu': [5, 10, 25, 50, 100],
-        'columnDefs': [{
-            "defaultContent": "-",
-            "targets": "_all"
-        }],
-        ajax: {
-            url: '/users',
-            method: "GET",
-        },
-        columns: [{
-                data: null,
-                sortable: false,
-                render: function(data, type, row, meta) {
-                    return meta.row + meta.settings._iDisplayStart + 1;
-                }
-            }, {
-                data: null,
-                render: function(data, type, row) {
-                    return row.firstName + ' ' + row.lastName;
-                }
-            },
-            {
-                data: 'gender'
-            },
-            {
-                data: 'email'
-            },
-            {
-                data: 'phoneNumber'
-            },
-            {
-                data: 'dob'
-            }
-        ]
-    })
-
-    setInterval(function() {
-        $.ajax({
-            url: '/details',
-            success: (response) => {
-                if (typeof response.name != "undefined") {
-                    console.log(response)
-                    userTable.row.add([
-                        userTable.data().count() + 1,
-                        response.name._text,
-                        response.gender._text,
-                        response.email._text,
-                        response.phonenumber._text,
-                        response.dob._text,
-                    ]).draw(true)
-                }
-            },
-            error: (jqXHR, textStatus, errorThrown) => {}
-        })
-    }, 500)
 })
