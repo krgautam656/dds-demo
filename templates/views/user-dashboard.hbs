@@ -109,6 +109,9 @@
                       </div>
                       <div class="col-sm-6">
                         <div class="d-flex align-items-center justify-content-md-end">
+                          <div class="mr-1 mb-3 mb-xl-0">
+                            <button type="button" class="dt-button" data-toggle="modal" data-target="#addUserModal"><i class="fa fa-user-plus"></i></button>
+                          </div>
                           <div class="pr-1 mb-6 mr-2 mb-xl-0" id="user-report-export">
                           </div>
                         </div>
@@ -199,8 +202,8 @@
                 <input type="text" name="phoneNumber" class="form-control" id="phoneNumber" placeholder="Phone Number" required>
               </div>
               <div class="form-group">
-                <label class="form-label" for="datepicker">Date of Birth</label>
-                <input type="text" name="dob" class="form-control" id="datepicker" placeholder="dd-mm-yyyy" required
+                <label class="form-label" for="update-user-dob">Date of Birth</label>
+                <input type="text" name="dob" class="form-control" id="update-user-dob" placeholder="dd-mm-yyyy" required
                   style="width: 100%;">
               </div>
           </div>
@@ -209,6 +212,98 @@
             <button type="submit" class="btn btn-primary">Update</button>
           </div>
           </form>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog" role="document" style="max-width: 768px;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="exampleModalLabel">Add New User</h4>
+            <button type="button" class="close pt-4 pr-4" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form method="post" id="new-registration">
+            <div class="modal-body">
+              <div class="row g-3">
+                <div class="col-md-12 mb-3" align="center">
+                  <span id="check"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="firstName">First Name</label>
+                  <input type="text" name="firstName" class="form-control" id="firstName" placeholder="First Name" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="lastName">Last Name</label>
+                  <input type="text" name="lastName" class="form-control" id="lastName" placeholder="Last Name">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="phoneNumber">Phone Number</label>
+                  <input type="text" name="phoneNumber" class="form-control" id="phoneNumber" placeholder="Phone Number" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="email">Email</label>
+                  <input type="email" name="email" class="form-control" id="email" placeholder="Email" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="add-user-dob">Date of Birth</label>
+                  <input type="text" name="dob" class="form-control" id="add-user-dob" placeholder="dd-mm-yyyy" required
+                    style="width: 100%;">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="radioMale">Gender</label>
+                  <div class="row">
+                    <div class="col-sm-2">
+                      <div class="form-check">
+                        <label class="form-check-label">
+                          <input type="radio" class="form-check-input" name="gender" id="radioMale" value="Male">
+                          Male
+                          <i class="input-helper"></i></label>
+                      </div>
+                    </div>
+                    <div class="col-sm-2">
+                      <div class="form-check">
+                        <label class="form-check-label">
+                          <input type="radio" class="form-check-input" name="gender" id="radioFemale" value="Female">
+                          Female
+                          <i class="input-helper"></i></label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="password">Password</label>
+                  <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="confirmPassword">Confirm Password</label>
+                  <input type="password" name="confirmPassword" class="form-control" id="confirmPassword"
+                    placeholder="Confirm Password" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="address">Address</label>
+                  <input type="text" name="address" class="form-control" id="address" placeholder="Address">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="city">City</label>
+                  <input type="text" name="city" class="form-control" id="city" placeholder="City">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="state">State</label>
+                  <input type="text" name="state" class="form-control" id="state" placeholder="State">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="pinCode">Pin Code</label>
+                  <input type="text" name="pinCode" class="form-control" id="pinCode" placeholder="Pin Code">
+                </div>              
+              </div></div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+            </form>
         </div>
       </div>
     </div>

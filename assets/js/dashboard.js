@@ -98,11 +98,17 @@
             }
             $('#email').val(rowData.email);
             $('#phoneNumber').val(rowData.phoneNumber);
-            $("#datepicker").val(rowData.dob);
+            $("#update-user-dob").val(rowData.dob);
             $('#userDetailsModal').modal('show');
         });
 
-        $("#datepicker").datepicker({
+        $("#update-user-dob").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            dateFormat: 'dd/mm/yy'
+        });
+
+        $("#add-user-dob").datepicker({
             changeMonth: true,
             changeYear: true,
             dateFormat: 'dd/mm/yy'
@@ -180,12 +186,113 @@
                     data: $(form).serialize(),
                     dataType: "json",
                     success: (response) => {
-                        console.log('hi')
                         $('#userDetailsModal').modal('hide');
                         userTable.ajax.reload();
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
                         console.log(errorThrown)
+                    }
+                })
+            }
+        })
+
+        $('#addUserModal').on('hidden.bs.modal', function() {
+            $(this).find('form').trigger('reset');
+            $(this).validate().resetForm();
+            $('#check').html('')
+        })
+
+        $("#new-registration").validate({
+            rules: {
+                firstName: "required",
+                email: {
+                    required: true,
+                    email: true
+                },
+                phoneNumber: {
+                    required: true,
+                    digits: true,
+                    minlength: 10,
+                    maxlength: 10,
+                },
+                password: {
+                    required: true,
+                    minlength: 5,
+                },
+                confirmPassword: {
+                    required: true,
+                    minlength: 5,
+                    equalTo: '#password'
+                },
+                gender: {
+                    required: true
+                },
+                address: {
+                    minlength: 3,
+                },
+                city: {
+                    minlength: 3,
+                },
+                state: {
+                    minlength: 3,
+                },
+                pinCode: {
+                    digits: true,
+                    minlength: 6,
+                    maxlength: 6,
+                }
+            },
+            messages: {
+                firstName: {
+                    required: "Please enter first name",
+                },
+                phoneNumber: {
+                    required: "Please enter phone number",
+                    digits: "Please enter valid phone number",
+                    minlength: "Phone number field accept only 10 digits",
+                    maxlength: "Phone number field accept only 10 digits",
+                },
+                email: {
+                    required: "Please enter email address",
+                    email: "Please enter a valid email address.",
+                },
+                password: {
+                    required: "Please enter password"
+                },
+                confirmPassword: {
+                    required: "Please enter confirm password"
+                },
+                dob: {
+                    required: "Please select Date of Birth"
+                },
+                gender: {
+                    required: "Please select Gender"
+                }
+            },
+            errorPlacement: function(error, element) {
+                if (element.attr("type") == "radio") {
+                    error.insertAfter(element.parent('div').next());
+                } else {
+                    error.insertAfter(element);
+                }
+            },
+            submitHandler: function(form, e) {
+                e.preventDefault();
+                $.ajax({
+                    type: form.method,
+                    url: '/register',
+                    data: $(form).serialize(),
+                    dataType: "json",
+                    success: (response) => {
+                        $('#addUserModal').modal('hide');
+                        userTable.ajax.reload();
+                        $(window).scrollTop(0);
+                    },
+                    error: (jqXHR, textStatus, errorThrown) => {
+                        $(window).scrollTop(0);
+                        $('#check').removeClass('text-success')
+                        $('#check').addClass('text-danger')
+                        $('#check').html(jqXHR.responseJSON.message)
                     }
                 })
             }
