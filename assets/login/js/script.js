@@ -37,6 +37,20 @@ $(document).ready(function() {
             },
             gender: {
                 required: true
+            },
+            address: {
+                minlength: 3,
+            },
+            city: {
+                minlength: 3,
+            },
+            state: {
+                minlength: 3,
+            },
+            pinCode: {
+                digits: true,
+                minlength: 6,
+                maxlength: 6,
             }
         },
         messages: {

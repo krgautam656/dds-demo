@@ -83,11 +83,11 @@ app.get('/user-dashboard', (req, res) => {
 })
 
 app.get('/users', (req, res) => {
-    users = getUsers()
+    users = getUsers().filter(el => el.createdBy === session.userId)
     var start = req.query.start
     var length = req.query.length
     var search = req.query.search.value
-    var data = getUsers()
+    var data = getUsers().filter(el => el.createdBy === session.userId)
 
     var total = 0
     var filter = 0
@@ -97,11 +97,11 @@ app.get('/users', (req, res) => {
         filter = users.length
     }
 
-    if (search != '') {
-        data = data.filter(obj => Object.values(obj).some(val => val.includes(search)))
-        total = users.length
-        filter = data.length
-    }
+    //if (search != '') {
+    //data = data.filter(obj => Object.values(obj).some(val => val.includes(search)))
+    //total = users.length
+    //filter = data.length
+    //}
 
     res.send({
         'recordsTotal': total,
@@ -168,6 +168,7 @@ app.post('/login', (req, res) => {
         if (user.password == userInfo.password) {
             session.username = user.firstName + ' ' + user.lastName
             session.userId = user.id
+            session.createdBy = user.createdBy
             res.send({
                 'Success': 'Success!'
             })
@@ -193,6 +194,13 @@ app.post('/register', (req, res) => {
     if (!user) {
         const id = uuid.v4()
         userInfo.id = id
+
+        if (session.userId) {
+            userInfo.createdBy = session.userId
+        } else {
+            userInfo.createdBy = ''
+        }
+
         users.push(userInfo)
         fs.writeFileSync('./users.json', JSON.stringify(users))
 
