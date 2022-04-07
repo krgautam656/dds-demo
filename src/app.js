@@ -170,7 +170,8 @@ app.post('/login', (req, res) => {
             session.userId = user.id
             session.createdBy = user.createdBy
             res.send({
-                'Success': 'Success!'
+                'Success': 'Success!',
+                'createdBy': user.createdBy
             })
         } else {
             return res.status(401).send({ message: "Invalid Password!" })
@@ -204,26 +205,6 @@ app.post('/register', (req, res) => {
         users.push(userInfo)
         fs.writeFileSync('./users.json', JSON.stringify(users))
 
-        let data = {
-            name: (Object.keys(userInfo.lastName).length) ? userInfo.firstName + ' ' + userInfo.lastName : userInfo.firstName,
-            email: userInfo.email,
-            gender: userInfo.gender,
-            phonenumber: userInfo.phoneNumber,
-            dob: userInfo.dob
-        }
-
-        fetch('http://localhost:8080/dds/rest1/applications/UsersDemoApp/domain_participants/UserParticipant/publishers/UserPublisher/data_writers/UserWriter', {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: { 'Content-Type': 'application/json' }
-        }).then((res) => {
-            if (res.ok) {
-                console.log('User details successfully published..')
-            }
-        }).catch((err) => {
-            console.error(err);
-        });
-
         res.send({ message: "User registered successfully,You can login now." })
     } else {
         res.status(400).send({ message: "Failed! Email is already in use!" })
@@ -232,6 +213,104 @@ app.post('/register', (req, res) => {
 
 function getUsers() {
     return JSON.parse(fs.readFileSync('./users.json', 'utf8'))
+}
+
+setInterval(() => {
+        fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/publishers/TempPublisher/data_writers/SystemTempWriter', {
+            method: 'POST',
+            body: JSON.stringify(getTempData()),
+            headers: { 'Content-Type': 'application/json' }
+        }).then((res) => {
+            if (res.ok) {
+                console.log('System temperature successfully published..')
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
+    },
+    1000)
+
+setInterval(() => {
+        fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/publishers/TempPublisher/data_writers/RoomTempWriter', {
+            method: 'POST',
+            body: JSON.stringify(getTempData()),
+            headers: { 'Content-Type': 'application/json' }
+        }).then((res) => {
+            if (res.ok) {
+                console.log('Room temperature successfully published..')
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
+    },
+    1000)
+
+setInterval(() => {
+        fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/publishers/TempPublisher/data_writers/ExhaustTempWriter', {
+            method: 'POST',
+            body: JSON.stringify(getTempData()),
+            headers: { 'Content-Type': 'application/json' }
+        }).then((res) => {
+            if (res.ok) {
+                console.log('Exhaust temperature successfully published..')
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
+    },
+    1000)
+
+app.get('/getSystemTempDetails', (req, res) => {
+    fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/subscribers/TempSubscriber/data_readers/SystemTempReader')
+        .then(response => response.text())
+        .then(data => {
+            var result = JSON.parse(convert.xml2json(data, { compact: true, spaces: 4 }))
+            if ((Object.keys(result.read_sample_seq).length)) {
+                console.log('System temperature successfully consumed..')
+            }
+            res.send((Object.keys(result.read_sample_seq).length) ? result.read_sample_seq.sample.data : 'Waiting for publications...')
+        }).catch(function(err) {
+            console.log('Not found: ' + err)
+            res.send('Unable to connect dds server..')
+        })
+})
+
+app.get('/getRoomTempDetails', (req, res) => {
+    fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/subscribers/TempSubscriber/data_readers/RoomTempReader')
+        .then(response => response.text())
+        .then(data => {
+            var result = JSON.parse(convert.xml2json(data, { compact: true, spaces: 4 }))
+            if ((Object.keys(result.read_sample_seq).length)) {
+                console.log('Room temperature successfully consumed..')
+            }
+            res.send((Object.keys(result.read_sample_seq).length) ? result.read_sample_seq.sample.data : 'Waiting for publications...')
+        }).catch(function(err) {
+            console.log('Not found: ' + err)
+            res.send('Unable to connect dds server..')
+        })
+})
+
+app.get('/getExhaustTempDetails', (req, res) => {
+    fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/subscribers/TempSubscriber/data_readers/ExhaustTempReader')
+        .then(response => response.text())
+        .then(data => {
+            var result = JSON.parse(convert.xml2json(data, { compact: true, spaces: 4 }))
+            if ((Object.keys(result.read_sample_seq).length)) {
+                console.log('Exhaust temperature successfully consumed..')
+            }
+            res.send((Object.keys(result.read_sample_seq).length) ? result.read_sample_seq.sample.data : 'Waiting for publications...')
+        }).catch(function(err) {
+            console.log('Not found: ' + err)
+            res.send('Unable to connect dds server..')
+        })
+})
+
+function getTempData() {
+    return {
+        time: new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }),
+        temperature: (Math.floor(Math.random() * 21) + 10).toString(),
+        humidity: (Math.floor(Math.random() * 21) + 10).toString()
+    }
 }
 
 app.listen(PORT, () => {
