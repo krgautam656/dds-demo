@@ -197,7 +197,7 @@
         function showAlert(name, value) {
             if (value == 30) {
                 $('.alert-danger').remove();
-                var htmlAlert = '<div class="alert alert-danger"><p>The temperature in the ' + name + ' reaches its highest point. </p></div > ';
+                var htmlAlert = '<div class="alert alert-danger"><p class="text-center">The temperature in the ' + name + ' reaches its highest point. </p></div > ';
                 $(".alert-message").prepend(htmlAlert);
                 $(".alert-message .alert").first().hide().fadeIn(200).delay(1000).fadeOut(1000, function() { $(this).remove(); });
             }
