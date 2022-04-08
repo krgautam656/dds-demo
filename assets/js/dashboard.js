@@ -1,6 +1,10 @@
 (function($) {
     'use strict';
     $(function() {
+        $('#carouselExampleIndicators').carousel({
+            interval: 2000
+        })
+
         let userTable = $('#detailsTable').DataTable({
             'processing': true,
             'serverSide': true,
