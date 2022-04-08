@@ -87,7 +87,8 @@
                 max: 30,
                 title: {
                     text: 'Temperature (C)',
-                }
+                },
+                tickAmount: 10
             },
             legend: {
                 show: true,
