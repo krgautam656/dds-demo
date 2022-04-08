@@ -84,7 +84,7 @@
                 }
             },
             yaxis: {
-                max: 35,
+                max: 30,
                 title: {
                     text: 'Temperature (C)',
                 }
@@ -204,17 +204,17 @@
         }
 
         window.setInterval(function() {
-            if (dataCount == 60) {
+            if (dataCount == 10) {
                 bar1.set(
-                    (totalTemp1 / 1800) * 100,
+                    (totalTemp1 / 300) * 100,
                     true
                 );
                 bar2.set(
-                    (totalTemp2 / 1800) * 100,
+                    (totalTemp2 / 300) * 100,
                     true
                 );
                 bar3.set(
-                    (totalTemp3 / 1800) * 100,
+                    (totalTemp3 / 300) * 100,
                     true
                 );
                 dataCount = 0

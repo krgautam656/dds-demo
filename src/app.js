@@ -64,7 +64,7 @@ app.get('/temperature-dashboard', (req, res) => {
         })
     } else {
         res.render('login', {
-            message: 'Please login first!'
+            message: 'Session expired! Please login first!'
         })
     }
 })
@@ -77,7 +77,7 @@ app.get('/user-dashboard', (req, res) => {
         })
     } else {
         res.render('login', {
-            message: 'Please login first!'
+            message: 'Session expired! Please login first!'
         })
     }
 })
@@ -148,7 +148,7 @@ app.get('/profile', (req, res) => {
         })
     } else {
         res.render('login', {
-            message: 'Please login first!'
+            message: 'Session expired! Please login first!'
         })
     }
 })
