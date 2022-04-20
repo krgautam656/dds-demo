@@ -1,6 +1,6 @@
 (function($) {
     'use strict';
-    $(function() {
+    $(function () {
         var bar1 = new ldBar(".roomTemp1", {
             "stroke": '#52b5f1',
             "stroke-width": 10,
@@ -81,14 +81,15 @@
                 },
                 labels: {
                     format: 'mm:ss',
-                }
+                },
+                tickAmount: 10,
             },
             yaxis: {
                 max: 30,
                 title: {
                     text: 'Temperature (C)',
                 },
-                tickAmount: 10
+                tickAmount: 6
             },
             legend: {
                 show: true,
@@ -123,12 +124,12 @@
                 data: data1
             }, {
                 data: data2
-            }])
-        }, 1100)
+                }])
+        }, 1000)
 
-        var currTemp1 = 0
-        var currTemp2 = 0
-        var currTemp3 = 0
+        var currTemp1 = 10
+        var currTemp2 = 10
+        var currTemp3 = 10
         var dataCount = 0
         var totalTemp1 = 0
         var totalTemp2 = 0
@@ -145,53 +146,55 @@
                     data[i].y = 0
                 }
                 if (typeof data1[i] != "undefined") {
-                    data1[i].x = newDate - XAXISRANGE - TICKINTERVAL - 400000
+                    data1[i].x = newDate - XAXISRANGE - TICKINTERVAL
                     data1[i].y = 0
                 }
                 if (typeof data2[i] != "undefined") {
-                    data2[i].x = newDate - XAXISRANGE - TICKINTERVAL + 400000
+                    data2[i].x = newDate - XAXISRANGE - TICKINTERVAL
                     data2[i].y = 0
                 }
             }
+            loadSensorRecord()
+            
+            data.push({
+                x: newDate,
+                y: currTemp1
+            })
+            showAlert('system', currTemp1);
+            
+            data1.push({
+                x: newDate,
+                y: currTemp2
+            })
+            showAlert('room', currTemp2);
 
+            data2.push({
+                x: newDate,
+                y: currTemp3
+            })
+            showAlert('exhaust', currTemp3)
+        }
 
-            $.getJSON("/getSystemTempDetails", function(response) {
+        function loadSensorRecord() {
+            $.getJSON("/getSystemTempDetails", function (response) {
                 if (typeof response.temperature != "undefined") {
-                    var temperature = parseInt(response.temperature._text)
-                    totalTemp1 += temperature
-                    currTemp1 = temperature
-                    showAlert('system', temperature)
+                    currTemp1 = parseInt(response.temperature);
+                    totalTemp1 += currTemp1
                 }
-                data.push({
-                    x: newDate,
-                    y: currTemp1
-                })
             });
 
-            $.getJSON("/getRoomTempDetails", function(response) {
+            $.getJSON("/getRoomTempDetails", function (response) {
                 if (typeof response.temperature != "undefined") {
-                    var temperature = parseInt(response.temperature._text)
-                    totalTemp2 += temperature
-                    currTemp2 = temperature
-                    showAlert('room', temperature)
+                    currTemp2 = parseInt(response.temperature);
+                    totalTemp2 += currTemp2
                 }
-                data1.push({
-                    x: newDate,
-                    y: currTemp2
-                })
             });
 
-            $.getJSON("/getExhaustTempDetails", function(response) {
+            $.getJSON("/getExhaustTempDetails", function (response) {
                 if (typeof response.temperature != "undefined") {
-                    var temperature = parseInt(response.temperature._text)
-                    totalTemp3 += temperature
-                    currTemp3 = temperature
-                    showAlert('exhaust', temperature)
+                    currTemp3 = parseInt(response.temperature);
+                    totalTemp3 += currTemp3
                 }
-                data2.push({
-                    x: newDate,
-                    y: currTemp3
-                })
             });
         }
 
@@ -204,18 +207,31 @@
             }
         }
 
-        window.setInterval(function() {
+        window.setInterval(function () {
+            var totalTemp = 300;
             if (dataCount == 10) {
                 bar1.set(
-                    (totalTemp1 / 300) * 100,
+                    0,
+                    true
+                );
+                bar1.set(
+                    (totalTemp1 / totalTemp) * 100,
                     true
                 );
                 bar2.set(
-                    (totalTemp2 / 300) * 100,
+                    0,
+                    true
+                );
+                bar2.set(
+                    (totalTemp2 / totalTemp) * 100,
                     true
                 );
                 bar3.set(
-                    (totalTemp3 / 300) * 100,
+                    0,
+                    true
+                );
+                bar3.set(
+                    (totalTemp3 / totalTemp) * 100,
                     true
                 );
                 dataCount = 0
@@ -224,7 +240,6 @@
                 totalTemp3 = 0
             }
         }, 1000)
-
 
     });
 })(jQuery);

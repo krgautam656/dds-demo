@@ -118,26 +118,6 @@
             dateFormat: 'dd/mm/yy'
         });
 
-        setInterval(function() {
-            $.ajax({
-                url: '/details',
-                success: (response) => {
-                    if (typeof response.name != "undefined") {
-                        console.log(response)
-                        userTable.row.add([
-                            userTable.data().count() + 1,
-                            response.name._text,
-                            response.gender._text,
-                            response.email._text,
-                            response.phonenumber._text,
-                            response.dob._text,
-                        ]).draw(true)
-                    }
-                },
-                error: (jqXHR, textStatus, errorThrown) => {}
-            })
-        }, 50000000)
-
         $("#userDetailsForm").validate({
             rules: {
                 firstName: "required",

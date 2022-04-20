@@ -4,11 +4,11 @@ const hbs = require('hbs')
 const cors = require('cors')
 const fs = require('fs')
 const fetch = require('node-fetch')
-const rti = require('rticonnextdds-connector')
+const dds = require('vortexdds')
+const uuid = require('uuid')
+
 var convert = require('xml-js')
 
-
-const uuid = require('uuid')
 const cookieParser = require("cookie-parser")
 const sessions = require('express-session')
 
@@ -49,6 +49,174 @@ app.use((req, res, next) => {
     }
     next()
 })
+
+
+var currTemp1={};
+var currTemp2={};
+var currTemp3={};
+app.get('/getSystemTempDetails', (req, res) => {
+    res.send(currTemp1);
+})
+
+app.get('/getRoomTempDetails', (req, res) => {
+    res.send(currTemp2);
+})
+
+app.get('/getExhaustTempDetails', (req, res) => {
+    res.send(currTemp3);
+})
+
+function sleep(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+}  
+
+main();
+
+function main() {
+    subscribeData().then(() => {
+        console.log('=== SensorDataSubscriber end');
+        process.exit(0);
+    }).catch((error) => {
+        console.log('Error: ' + error.message);
+        process.exit(1);
+    });
+}
+
+async function subscribeData() {
+
+    console.log('=== SensorDataSubscriber start');
+
+    let participant = null;
+    try {
+        participant = new dds.Participant();
+
+        const systemTempTopicName = 'SystemTempTopic';
+        const roomTempTopicName = 'RoomTempTopic';
+        const exhaustTempTopicName = 'ExhaustTempTopic';
+        const idlName = 'SensorData.idl';
+        const idlPath = __dirname + path.sep + idlName;
+        const typeSupports = await dds.importIDL(idlPath);
+        const typeSupport = typeSupports.get('SensorData::Sensor');
+
+        const tqos = dds.QoS.topicDefault();
+
+        tqos.durability = { kind: dds.DurabilityKind.Transient };
+        tqos.reliability = { kind: dds.ReliabilityKind.Reliable };
+
+        const systemTempTopic = participant.createTopic(
+            systemTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const roomTempTopic = participant.createTopic(
+            roomTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const exhaustTempTopic = participant.createTopic(
+            exhaustTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const sqos = dds.QoS.subscriberDefault();
+
+        sqos.partition = { names: 'Sensor example' };
+        const sub = participant.createSubscriber(sqos);
+
+        const rqos = dds.QoS.readerDefault();
+
+        rqos.durability = { kind: dds.DurabilityKind.Transient };
+        rqos.reliability = { kind: dds.ReliabilityKind.Reliable };
+        
+        sub.createReader(
+            systemTempTopic,
+            rqos,
+            {
+                onDataAvailable: function (entity) {
+                    let takeArray = entity.take(1);
+                    if (takeArray.length > 0 && takeArray[0].info.valid_data) {
+                        console.log('System temperature successfully received :');
+                        currTemp1 = {
+                            time: takeArray[0].sample.time,
+                            temperature: takeArray[0].sample.temperature,
+                            temperature: takeArray[0].sample.temperature,
+                            humidity: takeArray[0].sample.humidity
+                        }
+                    }
+                }
+            });
+        
+        sub.createReader(
+            roomTempTopic,
+            rqos,
+            {
+                onDataAvailable: function (entity) {
+                    let takeArray = entity.take(1);
+                    if (takeArray.length > 0 && takeArray[0].info.valid_data) {
+                        console.log('Room temperature successfully received :');
+                        currTemp2 = {
+                            time: takeArray[0].sample.time,
+                            temperature: takeArray[0].sample.temperature,
+                            temperature: takeArray[0].sample.temperature,
+                            humidity: takeArray[0].sample.humidity
+                        }
+                    }
+                }
+            });
+        
+        sub.createReader(
+            exhaustTempTopic,
+            rqos,
+            {
+                onDataAvailable: function (entity) {
+                    let takeArray = entity.take(1);
+                    if (takeArray.length > 0 && takeArray[0].info.valid_data) {
+                        console.log('Exhaust temperature successfully received :');
+                        currTemp3 = {
+                            time: takeArray[0].sample.time,
+                            temperature: takeArray[0].sample.temperature,
+                            temperature: takeArray[0].sample.temperature,
+                            humidity: takeArray[0].sample.humidity
+                        }
+                    }
+                }
+            });
+
+        while (true) {
+            await sleep(1000);
+        }
+
+    } finally {
+        console.log('=== Cleanup resources');
+        if (participant !== null) {
+            participant.delete().catch((error) => {
+                console.log('Error cleaning up resources: '
+                    + error.message);
+            });
+        }
+    }
+}
+
+async function createTopic(topicName) {
+    const idlName = 'SensorData.idl';
+    const idlPath = __dirname + path.sep + idlName;
+    const typeSupports = await dds.importIDL(idlPath);
+    const typeSupport = typeSupports.get('SensorData::Sensor');
+
+    const tqos = dds.QoS.topicDefault();
+
+    tqos.durability = { kind: dds.DurabilityKind.Transient };
+    tqos.reliability = { kind: dds.ReliabilityKind.Reliable };
+
+    return participant.createTopic(
+        topicName,
+        typeSupport,
+        tqos,
+    );
+}
 
 app.get(['', '/login'], (req, res) => {
     res.render('login', {
@@ -122,21 +290,6 @@ app.post('/updateUser', (req, res) => {
     users[index].dob = userInfo.dob
     fs.writeFileSync('./users.json', JSON.stringify(users))
     res.status(200).send({ message: "successfully updated!!" })
-})
-
-app.get('/details', (req, res) => {
-    fetch('http://localhost:8080/dds/rest1/applications/UsersDemoApp/domain_participants/UserParticipant/subscribers/UserSubscriber/data_readers/UserReader')
-        .then(response => response.text())
-        .then(data => {
-            var result = JSON.parse(convert.xml2json(data, { compact: true, spaces: 4 }))
-            if ((Object.keys(result.read_sample_seq).length)) {
-                console.log('User details successfully consumed..')
-            }
-            res.send((Object.keys(result.read_sample_seq).length) ? result.read_sample_seq.sample.data : 'Waiting for publications...')
-        }).catch(function(err) {
-            console.log('Not found: ' + err)
-            res.send('Unable to connect dds server..')
-        })
 })
 
 app.get('/profile', (req, res) => {
@@ -214,96 +367,6 @@ app.post('/register', (req, res) => {
 function getUsers() {
     return JSON.parse(fs.readFileSync('./users.json', 'utf8'))
 }
-
-setInterval(() => {
-        fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/publishers/TempPublisher/data_writers/SystemTempWriter', {
-            method: 'POST',
-            body: JSON.stringify(getTempData()),
-            headers: { 'Content-Type': 'application/json' }
-        }).then((res) => {
-            if (res.ok) {
-                console.log('System temperature successfully published..')
-            }
-        }).catch((err) => {
-            console.log(err);
-        });
-    },
-    1000)
-
-setInterval(() => {
-        fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/publishers/TempPublisher/data_writers/RoomTempWriter', {
-            method: 'POST',
-            body: JSON.stringify(getTempData()),
-            headers: { 'Content-Type': 'application/json' }
-        }).then((res) => {
-            if (res.ok) {
-                console.log('Room temperature successfully published..')
-            }
-        }).catch((err) => {
-            console.log(err);
-        });
-    },
-    1000)
-
-setInterval(() => {
-        fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/publishers/TempPublisher/data_writers/ExhaustTempWriter', {
-            method: 'POST',
-            body: JSON.stringify(getTempData()),
-            headers: { 'Content-Type': 'application/json' }
-        }).then((res) => {
-            if (res.ok) {
-                console.log('Exhaust temperature successfully published..')
-            }
-        }).catch((err) => {
-            console.log(err);
-        });
-    },
-    1000)
-
-app.get('/getSystemTempDetails', (req, res) => {
-    fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/subscribers/TempSubscriber/data_readers/SystemTempReader')
-        .then(response => response.text())
-        .then(data => {
-            var result = JSON.parse(convert.xml2json(data, { compact: true, spaces: 4 }))
-            if ((Object.keys(result.read_sample_seq).length)) {
-                console.log('System temperature successfully consumed..')
-            }
-            res.send((Object.keys(result.read_sample_seq).length) ? result.read_sample_seq.sample.data : 'Waiting for publications...')
-        }).catch(function(err) {
-            console.log('Not found: ' + err)
-            res.send('Unable to connect dds server..')
-        })
-})
-
-app.get('/getRoomTempDetails', (req, res) => {
-    fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/subscribers/TempSubscriber/data_readers/RoomTempReader')
-        .then(response => response.text())
-        .then(data => {
-            var result = JSON.parse(convert.xml2json(data, { compact: true, spaces: 4 }))
-            if ((Object.keys(result.read_sample_seq).length)) {
-                console.log('Room temperature successfully consumed..')
-            }
-            res.send((Object.keys(result.read_sample_seq).length) ? result.read_sample_seq.sample.data : 'Waiting for publications...')
-        }).catch(function(err) {
-            console.log('Not found: ' + err)
-            res.send('Unable to connect dds server..')
-        })
-})
-
-app.get('/getExhaustTempDetails', (req, res) => {
-    fetch('http://localhost:8080/dds/rest1/applications/TemperatureDemoApp/domain_participants/TempParticipant/subscribers/TempSubscriber/data_readers/ExhaustTempReader')
-        .then(response => response.text())
-        .then(data => {
-            var result = JSON.parse(convert.xml2json(data, { compact: true, spaces: 4 }))
-            if ((Object.keys(result.read_sample_seq).length)) {
-                console.log('Exhaust temperature successfully consumed..')
-            }
-            res.send((Object.keys(result.read_sample_seq).length) ? result.read_sample_seq.sample.data : 'Waiting for publications...')
-        }).catch(function(err) {
-            console.log('Not found: ' + err)
-            res.send('Unable to connect dds server..')
-        })
-})
 
 function getTempData() {
     return {
