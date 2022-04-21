@@ -137,7 +137,11 @@ $(document).ready(function() {
                 dataType: "json",
                 success: (response) => {
                     $('#login')[0].reset()
-                    window.location.href = '/user-dashboard'
+                    if (response.createdBy == "") {
+                        window.location.href = '/user-dashboard'
+                    } else {
+                        window.location.href = '/temperature-dashboard'
+                    }
                 },
                 error: (jqXHR, textStatus, errorThrown) => {
                     document.getElementById("check").innerHTML = jqXHR.responseJSON.message

@@ -1,0 +1,10 @@
+module SensorData
+{
+   struct Sensor
+   {
+      string time;
+      string temperature;
+      string humidity;
+   };
+   #pragma keylist Sensor time
+};

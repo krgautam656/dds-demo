@@ -4,11 +4,11 @@ const hbs = require('hbs')
 const cors = require('cors')
 const fs = require('fs')
 const fetch = require('node-fetch')
-const rti = require('rticonnextdds-connector')
+const dds = require('vortexdds')
+const uuid = require('uuid')
+
 var convert = require('xml-js')
 
-
-const uuid = require('uuid')
 const cookieParser = require("cookie-parser")
 const sessions = require('express-session')
 
@@ -20,7 +20,6 @@ const app = express()
 const resourcesPath = path.join(__dirname, '../assets')
 const templatesPath = path.join(__dirname, '../templates/views')
 const partialsPath = path.join(__dirname, '../templates/partials')
-const configFile = path.join(__dirname, '../ShapeExample.xml')
 
 app.set('view engine', 'hbs')
 app.set('views', templatesPath)
@@ -50,6 +49,289 @@ app.use((req, res, next) => {
     next()
 })
 
+var currTemp1 = {};
+var currTemp2 = {};
+var currTemp3 = {};
+app.get('/getSystemTempDetails', (req, res) => {
+    res.send(currTemp1);
+})
+
+app.get('/getRoomTempDetails', (req, res) => {
+    res.send(currTemp2);
+})
+
+app.get('/getExhaustTempDetails', (req, res) => {
+    res.send(currTemp3);
+})
+
+var notificationName = '';
+app.get('/sendNotification', (req, res) => {
+    notificationName = req.query.name;
+    res.sendStatus(200);
+})
+
+app.get('/getSensorNotification', (req, res) => {
+    var name = notificationName;
+    if (name != '') {
+        notificationName = '';
+    }
+    res.send({
+        name: name
+    });
+})
+
+var startDate = new Date();
+app.get('/controlTemperature', (req, res) => {
+    startDate = new Date();
+    var name = req.query.name;
+    if (name == 'system') {
+        systemTemp = 5;
+    } else if (name == 'room') {
+        roomTemp = 5;
+    } else if (name == 'exhaust') {
+        exhaustTemp = 5;
+    }
+
+    res.sendStatus(200);
+})
+
+setInterval(function () {
+    if (((new Date() - startDate.getTime()) / 1000) > 60) {
+        systemTemp = 0;
+        roomTemp = 0;
+        exhaustTemp = 0;
+    }
+}, 1000);
+
+function sleep(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+main();
+
+function main() {
+    subscribeData().then(() => {
+        console.log('=== SensorDataSubscriber end');
+        process.exit(0);
+    }).catch((error) => {
+        console.log('Error: ' + error.message);
+        process.exit(1);
+    });
+
+    publishData().then(() => {
+        console.log('=== SensorDataPublisher end');
+        process.exit(0);
+    }).catch((error) => {
+        console.log('Error: ' + error.message);
+        process.exit(1);
+    });
+}
+
+async function subscribeData() {
+
+    console.log('=== SensorDataSubscriber start');
+
+    let participant = null;
+    try {
+        participant = new dds.Participant();
+
+        const systemTempTopicName = 'SystemTempTopic';
+        const roomTempTopicName = 'RoomTempTopic';
+        const exhaustTempTopicName = 'ExhaustTempTopic';
+        const idlName = 'SensorData.idl';
+        const idlPath = __dirname + path.sep + idlName;
+        const typeSupports = await dds.importIDL(idlPath);
+        const typeSupport = typeSupports.get('SensorData::Sensor');
+
+        const tqos = dds.QoS.topicDefault();
+
+        tqos.durability = { kind: dds.DurabilityKind.Transient };
+        tqos.reliability = { kind: dds.ReliabilityKind.Reliable };
+
+        const systemTempTopic = participant.createTopic(
+            systemTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const roomTempTopic = participant.createTopic(
+            roomTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const exhaustTempTopic = participant.createTopic(
+            exhaustTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const sqos = dds.QoS.subscriberDefault();
+
+        sqos.partition = { names: 'Sensor example' };
+        const sub = participant.createSubscriber(sqos);
+
+        const rqos = dds.QoS.readerDefault();
+
+        rqos.durability = { kind: dds.DurabilityKind.Transient };
+        rqos.reliability = { kind: dds.ReliabilityKind.Reliable };
+
+        sub.createReader(
+            systemTempTopic,
+            rqos,
+            {
+                onDataAvailable: function (entity) {
+                    let takeArray = entity.take(1);
+                    if (takeArray.length > 0 && takeArray[0].info.valid_data) {
+                        console.log('System temperature successfully received :');
+                        currTemp1 = {
+                            time: takeArray[0].sample.time,
+                            temperature: takeArray[0].sample.temperature,
+                            temperature: takeArray[0].sample.temperature,
+                            humidity: takeArray[0].sample.humidity
+                        }
+                    }
+                }
+            });
+
+        sub.createReader(
+            roomTempTopic,
+            rqos,
+            {
+                onDataAvailable: function (entity) {
+                    let takeArray = entity.take(1);
+                    if (takeArray.length > 0 && takeArray[0].info.valid_data) {
+                        console.log('Room temperature successfully received :');
+                        currTemp2 = {
+                            time: takeArray[0].sample.time,
+                            temperature: takeArray[0].sample.temperature,
+                            temperature: takeArray[0].sample.temperature,
+                            humidity: takeArray[0].sample.humidity
+                        }
+                    }
+                }
+            });
+
+        sub.createReader(
+            exhaustTempTopic,
+            rqos,
+            {
+                onDataAvailable: function (entity) {
+                    let takeArray = entity.take(1);
+                    if (takeArray.length > 0 && takeArray[0].info.valid_data) {
+                        console.log('Exhaust temperature successfully received :');
+                        currTemp3 = {
+                            time: takeArray[0].sample.time,
+                            temperature: takeArray[0].sample.temperature,
+                            temperature: takeArray[0].sample.temperature,
+                            humidity: takeArray[0].sample.humidity
+                        }
+                    }
+                }
+            });
+
+        while (true) {
+            await sleep(1000);
+        }
+
+    } finally {
+        console.log('=== Cleanup resources');
+        if (participant !== null) {
+            participant.delete().catch((error) => {
+                console.log('Error cleaning up resources: '
+                    + error.message);
+            });
+        }
+    }
+}
+
+async function publishData() {
+
+    console.log('=== SensorDataPublisher start');
+
+    let participant = null;
+    try {
+        participant = new dds.Participant();
+
+        const systemTempTopicName = 'SystemTempTopic';
+        const roomTempTopicName = 'RoomTempTopic';
+        const exhaustTempTopicName = 'ExhaustTempTopic';
+        const idlName = 'SensorData.idl';
+        const idlPath = __dirname + path.sep + idlName;
+
+        const typeSupports = await dds.importIDL(idlPath);
+        const typeSupport = typeSupports.get('SensorData::Sensor');
+
+        const tqos = dds.QoS.topicDefault();
+
+        tqos.durability = { kind: dds.DurabilityKind.Transient };
+        tqos.reliability = { kind: dds.ReliabilityKind.Reliable };
+
+        const systemTempTopic = participant.createTopic(
+            systemTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const roomTempTopic = participant.createTopic(
+            roomTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const exhaustTempTopic = participant.createTopic(
+            exhaustTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const pqos = dds.QoS.publisherDefault();
+
+        pqos.partition = { names: 'Sensor example' };
+        const pub = participant.createPublisher(pqos);
+
+        const wqos = dds.QoS.writerDefault();
+
+        wqos.durability = { kind: dds.DurabilityKind.Transient };
+        wqos.reliability = { kind: dds.ReliabilityKind.Reliable };
+        const systemTempWriter = pub.createWriter(systemTempTopic, wqos);
+        const roomTempWriter = pub.createWriter(roomTempTopic, wqos);
+        const exhaustTempWriter = pub.createWriter(exhaustTempTopic, wqos);
+
+        while (true) {
+            await systemTempWriter.writeReliable(getTempData(systemTemp));
+            console.log('System temperature successfully send :');
+            await roomTempWriter.writeReliable(getTempData(roomTemp));
+            console.log('Room temperature successfully send :');
+            await exhaustTempWriter.writeReliable(getTempData(exhaustTemp));
+            console.log('Exhaust temperature successfully send :');
+            await sleep(1000);
+        }
+
+    } finally {
+        console.log('=== Cleanup resources');
+        if (participant !== null) {
+            participant.delete().catch((error) => {
+                console.log('Error cleaning up resources: '
+                    + error.message);
+            });
+        }
+    }
+
+};
+
+var systemTemp = 0;
+var roomTemp = 0;
+var exhaustTemp = 0;
+
+function getTempData(temp) {
+    return {
+        time: new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }),
+        temperature: (Math.floor(Math.random() * (21 - temp)) + 10).toString(),
+        humidity: (Math.floor(Math.random() * (21 - temp)) + 10).toString()
+    }
+}
+
 app.get(['', '/login'], (req, res) => {
     res.render('login', {
         title: 'Login'
@@ -57,29 +339,29 @@ app.get(['', '/login'], (req, res) => {
 })
 
 app.get('/temperature-dashboard', (req, res) => {
-    if (session.username) {
-        res.render('temperature-dashboard', {
-            title: 'Temperature Dashboard',
-            name: session.username
-        })
-    } else {
-        res.render('login', {
-            message: 'Please login first!'
-        })
-    }
+    //if (session.username) {
+    res.render('temperature-dashboard', {
+        title: 'Temperature Dashboard',
+        name: session.username
+    })
+    // } else {
+    //     res.render('login', {
+    //         message: 'Session expired! Please login first!'
+    //     })
+    // }
 })
 
 app.get('/user-dashboard', (req, res) => {
-    if (session.username) {
-        res.render('user-dashboard', {
-            title: 'User Dashboard',
-            name: session.username
-        })
-    } else {
-        res.render('login', {
-            message: 'Please login first!'
-        })
-    }
+    //if (session.username) {
+    res.render('user-dashboard', {
+        title: 'User Dashboard',
+        name: session.username
+    })
+    // } else {
+    //     res.render('login', {
+    //         message: 'Session expired! Please login first!'
+    //     })
+    // }
 })
 
 app.get('/users', (req, res) => {
@@ -124,21 +406,6 @@ app.post('/updateUser', (req, res) => {
     res.status(200).send({ message: "successfully updated!!" })
 })
 
-app.get('/details', (req, res) => {
-    fetch('http://localhost:8080/dds/rest1/applications/UsersDemoApp/domain_participants/UserParticipant/subscribers/UserSubscriber/data_readers/UserReader')
-        .then(response => response.text())
-        .then(data => {
-            var result = JSON.parse(convert.xml2json(data, { compact: true, spaces: 4 }))
-            if ((Object.keys(result.read_sample_seq).length)) {
-                console.log('User details successfully consumed..')
-            }
-            res.send((Object.keys(result.read_sample_seq).length) ? result.read_sample_seq.sample.data : 'Waiting for publications...')
-        }).catch(function(err) {
-            console.log('Not found: ' + err)
-            res.send('Unable to connect dds server..')
-        })
-})
-
 app.get('/profile', (req, res) => {
     if (session.username) {
         res.render('profile', {
@@ -148,7 +415,7 @@ app.get('/profile', (req, res) => {
         })
     } else {
         res.render('login', {
-            message: 'Please login first!'
+            message: 'Session expired! Please login first!'
         })
     }
 })
@@ -170,7 +437,8 @@ app.post('/login', (req, res) => {
             session.userId = user.id
             session.createdBy = user.createdBy
             res.send({
-                'Success': 'Success!'
+                'Success': 'Success!',
+                'createdBy': user.createdBy
             })
         } else {
             return res.status(401).send({ message: "Invalid Password!" })
@@ -203,26 +471,6 @@ app.post('/register', (req, res) => {
 
         users.push(userInfo)
         fs.writeFileSync('./users.json', JSON.stringify(users))
-
-        let data = {
-            name: (Object.keys(userInfo.lastName).length) ? userInfo.firstName + ' ' + userInfo.lastName : userInfo.firstName,
-            email: userInfo.email,
-            gender: userInfo.gender,
-            phonenumber: userInfo.phoneNumber,
-            dob: userInfo.dob
-        }
-
-        fetch('http://localhost:8080/dds/rest1/applications/UsersDemoApp/domain_participants/UserParticipant/publishers/UserPublisher/data_writers/UserWriter', {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: { 'Content-Type': 'application/json' }
-        }).then((res) => {
-            if (res.ok) {
-                console.log('User details successfully published..')
-            }
-        }).catch((err) => {
-            console.error(err);
-        });
 
         res.send({ message: "User registered successfully,You can login now." })
     } else {

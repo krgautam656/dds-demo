@@ -1,68 +1,53 @@
-(function($) {
+(function ($) {
     'use strict';
-    $(function() {
+    $(function () {
         var bar1 = new ldBar(".roomTemp1", {
             "stroke": '#52b5f1',
             "stroke-width": 10,
             "preset": "circle",
-            "value": 65
+            "value": 0
         });
 
         var bar2 = new ldBar(".roomTemp2", {
             "stroke": '#00e396',
             "stroke-width": 10,
             "preset": "circle",
-            "value": 65
+            "value": 0
         });
 
         var bar3 = new ldBar(".roomTemp3", {
             "stroke": '#feb019',
             "stroke-width": 10,
             "preset": "circle",
-            "value": 65
+            "value": 0
         });
-
-        window.setInterval(function() {
-            bar1.set(
-                Math.floor(Math.random() * (100 - 1 + 1) + 1),
-                true
-            );
-            bar2.set(
-                Math.floor(Math.random() * (100 - 1 + 1) + 1),
-                true
-            );
-            bar3.set(
-                Math.floor(Math.random() * (100 - 1 + 1) + 1),
-                true
-            );
-        }, 1000)
 
         var lastDate = 0
         var data = []
         var data1 = []
         var data2 = []
-        var TICKINTERVAL = 86400000
-        let XAXISRANGE = 777600000
+        var TICKINTERVAL = 300000
+        let XAXISRANGE = 2700000
         var options = {
             series: [{
-                name: 'Room Temp. 1',
+                name: 'System Temperature',
                 data: data.slice()
             }, {
-                name: 'Room Temp. 2',
+                name: 'Room Temperature',
                 data: data1.slice()
             }, {
-                name: 'Room Temp. 3',
+                name: 'Exhaust Temperature',
                 data: data2.slice()
             }],
             chart: {
                 id: 'realtime',
                 height: 350,
-                type: 'line',
+                type: 'area',
                 animations: {
                     enabled: true,
                     easing: 'linear',
                     dynamicAnimation: {
-                        speed: 1000
+                        speed: 999
                     }
                 },
                 toolbar: {
@@ -92,35 +77,46 @@
                 type: 'datetime',
                 range: XAXISRANGE,
                 title: {
-                    text: 'Date',
-                }
+                    text: 'Time (Second)',
+                },
+                labels: {
+                    format: 'mm:ss',
+                    datetimeUTC: false,
+                },
+                tickAmount: 10,
             },
             yaxis: {
-                max: 100,
+                max: 30,
                 title: {
                     text: 'Temperature (C)',
-                }
+                },
+                tickAmount: 6
             },
             legend: {
                 show: true,
                 floating: true,
                 horizontalAlign: 'left',
                 onItemClick: {
-                    toggleDataSeries: true
+                    toggleDataSeries: false
                 },
                 position: 'top',
                 offsetY: -28,
                 offsetX: 60
+            },
+            tooltip: {
+                x: {
+                    format: 'mm:ss'
+                }
             },
         };
 
         var chart = new ApexCharts(document.querySelector("#linechart"), options);
         chart.render();
 
-        window.setInterval(function() {
+        window.setInterval(function () {
             getNewSeries(lastDate, {
-                min: 10,
-                max: 100
+                min: 0,
+                max: 30
             })
 
             chart.updateSeries([{
@@ -132,37 +128,127 @@
             }])
         }, 1000)
 
+        window.currTemp1 = 10
+        window.currTemp2 = 10
+        window.currTemp3 = 10
+        var dataCount = 0
+        var totalTemp1 = 0
+        var totalTemp2 = 0
+        var totalTemp3 = 0
+
         function getNewSeries(baseval, yrange) {
+            dataCount++;
             var newDate = baseval + TICKINTERVAL;
             lastDate = newDate
 
             for (var i = 0; i < data.length - 10; i++) {
-                data[i].x = newDate - XAXISRANGE - TICKINTERVAL
-                data[i].y = 0
-
-                data1[i].x = newDate - XAXISRANGE - TICKINTERVAL - 400000
-                data1[i].y = 0
-
-                data2[i].x = newDate - XAXISRANGE - TICKINTERVAL + 400000
-                data2[i].y = 0
+                if (typeof data[i] != "undefined") {
+                    data[i].x = newDate - XAXISRANGE - TICKINTERVAL
+                    data[i].y = 0
+                }
+                if (typeof data1[i] != "undefined") {
+                    data1[i].x = newDate - XAXISRANGE - TICKINTERVAL
+                    data1[i].y = 0
+                }
+                if (typeof data2[i] != "undefined") {
+                    data2[i].x = newDate - XAXISRANGE - TICKINTERVAL
+                    data2[i].y = 0
+                }
             }
+            loadSensorRecord()
 
             data.push({
                 x: newDate,
-                y: Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min
+                y: currTemp1
             })
-
-
+            showAlert('system', currTemp1);
 
             data1.push({
                 x: newDate,
-                y: Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min
+                y: currTemp2
             })
+            showAlert('room', currTemp2);
+
             data2.push({
                 x: newDate,
-                y: Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min
+                y: currTemp3
             })
+            showAlert('exhaust', currTemp3)
         }
+
+        function loadSensorRecord() {
+            $.getJSON("/getSystemTempDetails", function (response) {
+                if (typeof response.temperature != "undefined") {
+                    currTemp1 = parseInt(response.temperature);
+                    totalTemp1 += currTemp1
+                }
+            });
+
+            $.getJSON("/getRoomTempDetails", function (response) {
+                if (typeof response.temperature != "undefined") {
+                    currTemp2 = parseInt(response.temperature);
+                    totalTemp2 += currTemp2
+                }
+            });
+
+            $.getJSON("/getExhaustTempDetails", function (response) {
+                if (typeof response.temperature != "undefined") {
+                    currTemp3 = parseInt(response.temperature);
+                    totalTemp3 += currTemp3
+                }
+            });
+        }
+
+        function showAlert(name, value) {
+            if (value == 30) {
+                sendNotification(name);
+                $('.alert-danger').remove();
+                var htmlAlert = '<div class="alert alert-danger"><p class="text-center">The temperature in the ' + name + ' reaches its highest point. </p></div > ';
+                $(".alert-message").prepend(htmlAlert);
+                $(".alert-message .alert").first().hide().fadeIn(200).delay(1000).fadeOut(1000, function () { $(this).remove(); });
+            }
+        }
+
+        function sendNotification(name) {
+            $.getJSON('/sendNotification',
+                {
+                    name: name,
+                });
+        }
+
+        window.setInterval(function () {
+            var totalTemp = 300;
+            if (dataCount == 10) {
+                bar1.set(
+                    0,
+                    true
+                );
+                bar1.set(
+                    (totalTemp1 / totalTemp) * 100,
+                    true
+                );
+                bar2.set(
+                    0,
+                    true
+                );
+                bar2.set(
+                    (totalTemp2 / totalTemp) * 100,
+                    true
+                );
+                bar3.set(
+                    0,
+                    true
+                );
+                bar3.set(
+                    (totalTemp3 / totalTemp) * 100,
+                    true
+                );
+                dataCount = 0
+                totalTemp1 = 0
+                totalTemp2 = 0
+                totalTemp3 = 0
+            }
+        }, 1000)
 
     });
 })(jQuery);

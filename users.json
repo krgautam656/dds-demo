@@ -1,4 +1,5 @@
-[{
+[
+    {
         "firstName": "Gautam",
         "lastName": "Kumar",
         "email": "krgautam656@gmail.com",
@@ -20,8 +21,8 @@
         "email": "vijay.mallaya@gmail.com",
         "password": "aaaaa",
         "confirmPassword": "aaaaa",
-        "dob": "12/09/2005",
-        "phoneNumber": "7438099999",
+        "dob": "01/09/2005",
+        "phoneNumber": "7438090000",
         "gender": "Male",
         "address": "",
         "city": "",
