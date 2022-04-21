@@ -20,7 +20,6 @@ const app = express()
 const resourcesPath = path.join(__dirname, '../assets')
 const templatesPath = path.join(__dirname, '../templates/views')
 const partialsPath = path.join(__dirname, '../templates/partials')
-const configFile = path.join(__dirname, '../ShapeExample.xml')
 
 app.set('view engine', 'hbs')
 app.set('views', templatesPath)
@@ -50,10 +49,9 @@ app.use((req, res, next) => {
     next()
 })
 
-
-var currTemp1={};
-var currTemp2={};
-var currTemp3={};
+var currTemp1 = {};
+var currTemp2 = {};
+var currTemp3 = {};
 app.get('/getSystemTempDetails', (req, res) => {
     res.send(currTemp1);
 })
@@ -66,15 +64,62 @@ app.get('/getExhaustTempDetails', (req, res) => {
     res.send(currTemp3);
 })
 
+var notificationName = '';
+app.get('/sendNotification', (req, res) => {
+    notificationName = req.query.name;
+    res.sendStatus(200);
+})
+
+app.get('/getSensorNotification', (req, res) => {
+    var name = notificationName;
+    if (name != '') {
+        notificationName = '';
+    }
+    res.send({
+        name: name
+    });
+})
+
+var startDate = new Date();
+app.get('/controlTemperature', (req, res) => {
+    startDate = new Date();
+    var name = req.query.name;
+    if (name == 'system') {
+        systemTemp = 5;
+    } else if (name == 'room') {
+        roomTemp = 5;
+    } else if (name == 'exhaust') {
+        exhaustTemp = 5;
+    }
+
+    res.sendStatus(200);
+})
+
+setInterval(function () {
+    if (((new Date() - startDate.getTime()) / 1000) > 60) {
+        systemTemp = 0;
+        roomTemp = 0;
+        exhaustTemp = 0;
+    }
+}, 1000);
+
 function sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds));
-}  
+}
 
 main();
 
 function main() {
     subscribeData().then(() => {
         console.log('=== SensorDataSubscriber end');
+        process.exit(0);
+    }).catch((error) => {
+        console.log('Error: ' + error.message);
+        process.exit(1);
+    });
+
+    publishData().then(() => {
+        console.log('=== SensorDataPublisher end');
         process.exit(0);
     }).catch((error) => {
         console.log('Error: ' + error.message);
@@ -130,7 +175,7 @@ async function subscribeData() {
 
         rqos.durability = { kind: dds.DurabilityKind.Transient };
         rqos.reliability = { kind: dds.ReliabilityKind.Reliable };
-        
+
         sub.createReader(
             systemTempTopic,
             rqos,
@@ -148,7 +193,7 @@ async function subscribeData() {
                     }
                 }
             });
-        
+
         sub.createReader(
             roomTempTopic,
             rqos,
@@ -166,7 +211,7 @@ async function subscribeData() {
                     }
                 }
             });
-        
+
         sub.createReader(
             exhaustTempTopic,
             rqos,
@@ -200,22 +245,91 @@ async function subscribeData() {
     }
 }
 
-async function createTopic(topicName) {
-    const idlName = 'SensorData.idl';
-    const idlPath = __dirname + path.sep + idlName;
-    const typeSupports = await dds.importIDL(idlPath);
-    const typeSupport = typeSupports.get('SensorData::Sensor');
+async function publishData() {
 
-    const tqos = dds.QoS.topicDefault();
+    console.log('=== SensorDataPublisher start');
 
-    tqos.durability = { kind: dds.DurabilityKind.Transient };
-    tqos.reliability = { kind: dds.ReliabilityKind.Reliable };
+    let participant = null;
+    try {
+        participant = new dds.Participant();
 
-    return participant.createTopic(
-        topicName,
-        typeSupport,
-        tqos,
-    );
+        const systemTempTopicName = 'SystemTempTopic';
+        const roomTempTopicName = 'RoomTempTopic';
+        const exhaustTempTopicName = 'ExhaustTempTopic';
+        const idlName = 'SensorData.idl';
+        const idlPath = __dirname + path.sep + idlName;
+
+        const typeSupports = await dds.importIDL(idlPath);
+        const typeSupport = typeSupports.get('SensorData::Sensor');
+
+        const tqos = dds.QoS.topicDefault();
+
+        tqos.durability = { kind: dds.DurabilityKind.Transient };
+        tqos.reliability = { kind: dds.ReliabilityKind.Reliable };
+
+        const systemTempTopic = participant.createTopic(
+            systemTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const roomTempTopic = participant.createTopic(
+            roomTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const exhaustTempTopic = participant.createTopic(
+            exhaustTempTopicName,
+            typeSupport,
+            tqos,
+        );
+
+        const pqos = dds.QoS.publisherDefault();
+
+        pqos.partition = { names: 'Sensor example' };
+        const pub = participant.createPublisher(pqos);
+
+        const wqos = dds.QoS.writerDefault();
+
+        wqos.durability = { kind: dds.DurabilityKind.Transient };
+        wqos.reliability = { kind: dds.ReliabilityKind.Reliable };
+        const systemTempWriter = pub.createWriter(systemTempTopic, wqos);
+        const roomTempWriter = pub.createWriter(roomTempTopic, wqos);
+        const exhaustTempWriter = pub.createWriter(exhaustTempTopic, wqos);
+
+        while (true) {
+            await systemTempWriter.writeReliable(getTempData(systemTemp));
+            console.log('System temperature successfully send :');
+            await roomTempWriter.writeReliable(getTempData(roomTemp));
+            console.log('Room temperature successfully send :');
+            await exhaustTempWriter.writeReliable(getTempData(exhaustTemp));
+            console.log('Exhaust temperature successfully send :');
+            await sleep(1000);
+        }
+
+    } finally {
+        console.log('=== Cleanup resources');
+        if (participant !== null) {
+            participant.delete().catch((error) => {
+                console.log('Error cleaning up resources: '
+                    + error.message);
+            });
+        }
+    }
+
+};
+
+var systemTemp = 0;
+var roomTemp = 0;
+var exhaustTemp = 0;
+
+function getTempData(temp) {
+    return {
+        time: new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }),
+        temperature: (Math.floor(Math.random() * (21 - temp)) + 10).toString(),
+        humidity: (Math.floor(Math.random() * (21 - temp)) + 10).toString()
+    }
 }
 
 app.get(['', '/login'], (req, res) => {
@@ -225,29 +339,29 @@ app.get(['', '/login'], (req, res) => {
 })
 
 app.get('/temperature-dashboard', (req, res) => {
-    if (session.username) {
-        res.render('temperature-dashboard', {
-            title: 'Temperature Dashboard',
-            name: session.username
-        })
-    } else {
-        res.render('login', {
-            message: 'Session expired! Please login first!'
-        })
-    }
+    //if (session.username) {
+    res.render('temperature-dashboard', {
+        title: 'Temperature Dashboard',
+        name: session.username
+    })
+    // } else {
+    //     res.render('login', {
+    //         message: 'Session expired! Please login first!'
+    //     })
+    // }
 })
 
 app.get('/user-dashboard', (req, res) => {
-    if (session.username) {
-        res.render('user-dashboard', {
-            title: 'User Dashboard',
-            name: session.username
-        })
-    } else {
-        res.render('login', {
-            message: 'Session expired! Please login first!'
-        })
-    }
+    //if (session.username) {
+    res.render('user-dashboard', {
+        title: 'User Dashboard',
+        name: session.username
+    })
+    // } else {
+    //     res.render('login', {
+    //         message: 'Session expired! Please login first!'
+    //     })
+    // }
 })
 
 app.get('/users', (req, res) => {
@@ -366,14 +480,6 @@ app.post('/register', (req, res) => {
 
 function getUsers() {
     return JSON.parse(fs.readFileSync('./users.json', 'utf8'))
-}
-
-function getTempData() {
-    return {
-        time: new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }),
-        temperature: (Math.floor(Math.random() * 21) + 10).toString(),
-        humidity: (Math.floor(Math.random() * 21) + 10).toString()
-    }
 }
 
 app.listen(PORT, () => {

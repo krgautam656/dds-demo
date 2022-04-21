@@ -1,6 +1,6 @@
-(function($) {
+(function ($) {
     'use strict';
-    $(function() {
+    $(function () {
         $('#carouselExampleIndicators').carousel({
             interval: 2000
         })
@@ -19,75 +19,75 @@
                 method: "GET",
             },
             columns: [{
-                    data: null,
-                    sortable: false,
-                    render: function(data, type, row, meta) {
-                        return meta.row + meta.settings._iDisplayStart + 1;
-                    }
-                }, {
-                    data: null,
-                    render: function(data, type, row) {
-                        return row.firstName + ' ' + row.lastName;
-                    }
-                },
-                {
-                    data: 'gender'
-                },
-                {
-                    data: 'email'
-                },
-                {
-                    data: 'phoneNumber'
-                },
-                {
-                    data: 'dob'
-                },
-                {
-                    data: null,
-                    className: "dt-center editor-edit",
-                    defaultContent: '<i class="typcn icon typcn-edit h3" style="cursor: pointer;"/>',
-                    orderable: false
+                data: null,
+                sortable: false,
+                render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
                 }
+            }, {
+                data: null,
+                render: function (data, type, row) {
+                    return row.firstName + ' ' + row.lastName;
+                }
+            },
+            {
+                data: 'gender'
+            },
+            {
+                data: 'email'
+            },
+            {
+                data: 'phoneNumber'
+            },
+            {
+                data: 'dob'
+            },
+            {
+                data: null,
+                className: "dt-center editor-edit",
+                defaultContent: '<i class="typcn icon typcn-edit h3" style="cursor: pointer;"/>',
+                orderable: false
+            }
             ]
         })
 
         var buttons = new $.fn.dataTable.Buttons(userTable, {
             buttons: [{
-                    extend: 'copyHtml5',
-                    text: '<i class="fa fa-files-o"></i>',
-                    titleAttr: 'Copy',
-                    exportOptions: {
-                        columns: 'th:not(:last-child)'
-                    }
-                },
-                {
-                    extend: 'excelHtml5',
-                    text: '<i class="fa fa-file-excel-o"></i>',
-                    titleAttr: 'Excel',
-                    exportOptions: {
-                        columns: 'th:not(:last-child)'
-                    }
-                },
-                {
-                    extend: 'csvHtml5',
-                    text: '<i class="fa fa-file-text-o"></i>',
-                    titleAttr: 'CSV',
-                    exportOptions: {
-                        columns: 'th:not(:last-child)'
-                    }
-                },
-                {
-                    extend: 'pdfHtml5',
-                    text: '<i class="fa fa-file-pdf-o"></i>',
-                    titleAttr: 'PDF',
-                    exportOptions: {
-                        columns: 'th:not(:last-child)'
-                    }
+                extend: 'copyHtml5',
+                text: '<i class="fa fa-files-o"></i>',
+                titleAttr: 'Copy',
+                exportOptions: {
+                    columns: 'th:not(:last-child)'
                 }
+            },
+            {
+                extend: 'excelHtml5',
+                text: '<i class="fa fa-file-excel-o"></i>',
+                titleAttr: 'Excel',
+                exportOptions: {
+                    columns: 'th:not(:last-child)'
+                }
+            },
+            {
+                extend: 'csvHtml5',
+                text: '<i class="fa fa-file-text-o"></i>',
+                titleAttr: 'CSV',
+                exportOptions: {
+                    columns: 'th:not(:last-child)'
+                }
+            },
+            {
+                extend: 'pdfHtml5',
+                text: '<i class="fa fa-file-pdf-o"></i>',
+                titleAttr: 'PDF',
+                exportOptions: {
+                    columns: 'th:not(:last-child)'
+                }
+            }
             ]
         }).container().appendTo($('#user-report-export'));
 
-        $('#detailsTable tbody').on('click', 'td.editor-edit', function() {
+        $('#detailsTable tbody').on('click', 'td.editor-edit', function () {
             var row = $(this).closest('tr');
 
             var rowData = userTable.row(row).data();
@@ -156,14 +156,14 @@
                     required: "Please select Gender"
                 }
             },
-            errorPlacement: function(error, element) {
+            errorPlacement: function (error, element) {
                 if (element.attr("type") == "radio") {
                     error.insertAfter(element.parent('div').next());
                 } else {
                     error.insertAfter(element);
                 }
             },
-            submitHandler: function(form) {
+            submitHandler: function (form) {
                 $.ajax({
                     type: form.method,
                     url: '/updateUser',
@@ -180,7 +180,7 @@
             }
         })
 
-        $('#addUserModal').on('hidden.bs.modal', function() {
+        $('#addUserModal').on('hidden.bs.modal', function () {
             $(this).find('form').trigger('reset');
             $(this).validate().resetForm();
             $('#check').html('')
@@ -253,14 +253,14 @@
                     required: "Please select Gender"
                 }
             },
-            errorPlacement: function(error, element) {
+            errorPlacement: function (error, element) {
                 if (element.attr("type") == "radio") {
                     error.insertAfter(element.parent('div').next());
                 } else {
                     error.insertAfter(element);
                 }
             },
-            submitHandler: function(form, e) {
+            submitHandler: function (form, e) {
                 e.preventDefault();
                 $.ajax({
                     type: form.method,
@@ -282,5 +282,50 @@
             }
         })
 
+        window.setInterval(function () {
+            $.getJSON("/getSensorNotification", function (response) {
+                if (typeof response.name != "undefined" && response.name != '') {
+                    $('#notification-count').html(parseInt($('#notification-count').html(), 10) + 1);
+
+                    var html = '<a class="dropdown-item preview-item"><div class="preview-thumbnail"><div class="preview-icon bg-warning"><i class="typcn typcn-info-large mx-0"></i></div></div>'
+                        + '<div class="preview-item-content">'
+                        + '<h6 class="preview-subject font-weight-normal">The temperature in the ' + response.name + ' reaches its highest point.</h6>'
+                        + '<p class="font-weight-light small-text mb-0"><button type="button" onclick="controlTemperature(\'' + response.name + '\',this);" class="btn btn-primary btn-sm" style="padding: 5px 0px 3px 10px;background-color: #ff8300;border-color: #ff8300;">TEMP <i class="typcn icon typcn-arrow-down"></i></button></p>'
+                        + '</div></a>';
+
+                    $('#add-new-notification').prepend(html);
+
+                    toastr.options = {
+                        "closeButton": true,
+                        "debug": false,
+                        "newestOnTop": true,
+                        "progressBar": true,
+                        "positionClass": "toast-bottom-right",
+                        "preventDuplicates": false,
+                        "showDuration": "300",
+                        "hideDuration": "1000",
+                        "timeOut": "5000",
+                        "extendedTimeOut": "1000",
+                        "showEasing": "swing",
+                        "hideEasing": "linear",
+                        "showMethod": "fadeIn",
+                        "hideMethod": "fadeOut"
+                    }
+                    toastr["warning"]('The temperature in the ' + response.name + ' reaches its highest point.');
+                }
+            });
+        }, 1000);
+
     });
 })(jQuery);
+
+function controlTemperature(name, element) {
+    $.getJSON('/controlTemperature',
+        {
+            name: name,
+        }
+    );
+    $(element).hide();
+}
+
+

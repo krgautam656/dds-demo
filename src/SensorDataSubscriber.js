@@ -5,7 +5,7 @@ const path = require('path');
 
 main();
 
-function main(){
+function main() {
   subscribeData().then(() => {
     console.log('=== SensorDataSubscriber end');
     process.exit(0);
@@ -15,7 +15,7 @@ function main(){
   });
 }
 
-async function subscribeData(){
+async function subscribeData() {
 
   console.log('=== SensorDataSubscriber start');
 
@@ -69,12 +69,12 @@ async function subscribeData(){
 
     console.log('=== [Subscriber] Ready ...');
     await takeData(systemTempReader);
-    //await takeData(roomTempReader);
-    //await takeData(exhaustTempReader);
+    await takeData(roomTempReader);
+    await takeData(exhaustTempReader);
 
   } finally {
     console.log('=== Cleanup resources');
-    if (participant !== null){
+    if (participant !== null) {
       participant.delete().catch((error) => {
         console.log('Error cleaning up resources: '
           + error.message);

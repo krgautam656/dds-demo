@@ -1,4 +1,4 @@
-(function($) {
+(function ($) {
     'use strict';
     $(function () {
         var bar1 = new ldBar(".roomTemp1", {
@@ -42,12 +42,12 @@
             chart: {
                 id: 'realtime',
                 height: 350,
-                type: 'line',
+                type: 'area',
                 animations: {
                     enabled: true,
                     easing: 'linear',
                     dynamicAnimation: {
-                        speed: 1000
+                        speed: 999
                     }
                 },
                 toolbar: {
@@ -81,6 +81,7 @@
                 },
                 labels: {
                     format: 'mm:ss',
+                    datetimeUTC: false,
                 },
                 tickAmount: 10,
             },
@@ -106,15 +107,15 @@
                 x: {
                     format: 'mm:ss'
                 }
-            }
+            },
         };
 
         var chart = new ApexCharts(document.querySelector("#linechart"), options);
         chart.render();
 
-        window.setInterval(function() {
+        window.setInterval(function () {
             getNewSeries(lastDate, {
-                min: 10,
+                min: 0,
                 max: 30
             })
 
@@ -124,12 +125,12 @@
                 data: data1
             }, {
                 data: data2
-                }])
+            }])
         }, 1000)
 
-        var currTemp1 = 10
-        var currTemp2 = 10
-        var currTemp3 = 10
+        window.currTemp1 = 10
+        window.currTemp2 = 10
+        window.currTemp3 = 10
         var dataCount = 0
         var totalTemp1 = 0
         var totalTemp2 = 0
@@ -155,13 +156,13 @@
                 }
             }
             loadSensorRecord()
-            
+
             data.push({
                 x: newDate,
                 y: currTemp1
             })
             showAlert('system', currTemp1);
-            
+
             data1.push({
                 x: newDate,
                 y: currTemp2
@@ -200,11 +201,19 @@
 
         function showAlert(name, value) {
             if (value == 30) {
+                sendNotification(name);
                 $('.alert-danger').remove();
                 var htmlAlert = '<div class="alert alert-danger"><p class="text-center">The temperature in the ' + name + ' reaches its highest point. </p></div > ';
                 $(".alert-message").prepend(htmlAlert);
-                $(".alert-message .alert").first().hide().fadeIn(200).delay(1000).fadeOut(1000, function() { $(this).remove(); });
+                $(".alert-message .alert").first().hide().fadeIn(200).delay(1000).fadeOut(1000, function () { $(this).remove(); });
             }
+        }
+
+        function sendNotification(name) {
+            $.getJSON('/sendNotification',
+                {
+                    name: name,
+                });
         }
 
         window.setInterval(function () {
