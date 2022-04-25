@@ -6,5 +6,5 @@ module SensorData
       string temperature;
       string humidity;
    };
-   #pragma keylist Sensor time
+   #pragma keylist Sensor
 };
