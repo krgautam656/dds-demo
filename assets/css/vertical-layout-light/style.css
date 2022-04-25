@@ -26228,5 +26228,10 @@ body.avgrund-active {
     color: #d20c4f;
 }
 
+.required:after {
+    content: " *";
+    color: red;
+}
+
 
 /*# sourceMappingURL=../maps/vertical-layout-light/style.css.map */

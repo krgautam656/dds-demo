@@ -7,17 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>{{title}}</title>
   <!-- base:css -->
+  <link rel="shortcut icon" href="images/favicon.png" />
   <link rel="stylesheet" href="vendors/typicons.font/font/typicons.css">
   <link rel="stylesheet" href="vendors/css/vendor.bundle.base.css">
   <!-- endinject -->
-  <!-- plugin css for this page -->
-  <!-- End plugin css for this page -->
   <!-- inject:css -->
   <link rel="stylesheet" href="css/vertical-layout-light/style.css">
   <!-- endinject -->
-  <link rel="shortcut icon" href="images/favicon.png" />
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="assets/styles.css" />
   <link rel="stylesheet" type="text/css" href="css/loading-bar.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
@@ -96,8 +92,8 @@
       <nav class="sidebar sidebar-offcanvas" id="sidebar" style="background: #fff;">
         <ul class="nav mb-3">
           <li class="nav-item">
-            <div class="d-flex sidebar-profile pb-0">
-              <marquee behavior="slide" direction="left">
+            <div class="d-flex sidebar-profile pb-4">
+              <marquee behavior="scroll" direction="left">
                 <img src="https://supportportal.thalesgroup.com/5a3c6ac4db40f810e615d3e05b96196c.iix" height="60"
                   alt="Natural" />
               </marquee>
@@ -109,7 +105,7 @@
               <span class="menu-title">Sensor Dashboard</span>
             </a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" {{hidden}}>
             <a class="nav-link" href="/user-dashboard">
               <i class="typcn typcn-user-add-outline menu-icon"></i>
               <span class="menu-title">User Dashboard</span>
@@ -202,8 +198,8 @@
         <!-- partial:partials/_footer.html -->
         <footer class="footer">
           <div class="d-sm-flex justify-content-center justify-content-sm-between">
-            <span class="text-center text-sm-left d-block d-sm-inline-block">Copyright © <a href="/login"
-                target="_blank">demo.com</a> 2022</span>
+            <span class="text-center text-sm-left d-block d-sm-inline-block">Copyright © <a
+                href="javascript:void(0);">trixell-demo.com</a> 2022</span>
           </div>
         </footer>
         <!-- partial -->
@@ -216,23 +212,10 @@
   <!-- base:js -->
   <script src="vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
-  <!-- Plugin js for this page-->
-  <!-- End plugin js for this page-->
-  <!-- inject:js -->
-  <script src="js/off-canvas.js"></script>
-  <script src="js/hoverable-collapse.js"></script>
   <script src="js/template.js"></script>
-  <script src="js/settings.js"></script>
-  <script src="js/todolist.js"></script>
-  <!-- endinject -->
-  <!-- plugin js for this page -->
-  <script src="vendors/progressbar.js/progressbar.min.js"></script>
-  <script src="vendors/chart.js/Chart.min.js"></script>
-  <!-- End plugin js for this page -->
+  <script src="js/off-canvas.js"></script>
   <!-- Custom js for this page-->
   <script type="text/javascript" src="js/sensor-dashboard.js"></script>
-  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
   <!-- End custom js for this page-->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <script type="text/javascript" src="js/loading-bar.min.js"></script>

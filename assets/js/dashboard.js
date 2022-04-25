@@ -1,6 +1,28 @@
 (function ($) {
     'use strict';
     $(function () {
+
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "url": "https://dev-l9qtcw3c.us.auth0.com/oauth/token",
+            "method": "POST",
+            "headers": {
+                "content-type": "application/json"
+            },
+            "data": "{\"client_id\":\"K1TXosU4pNhpFiM7Rs5xIjRL2YElYS8P\",\"client_secret\":\"7yLGIm4jTAjPogeAqQwo2MDrtELf4W0GYRVBu4Dl358_8YqQnMwqabZQlQ5knUXT\",\"audience\":\"https://dev-l9qtcw3c.us.auth0.com/api/v2/\",\"grant_type\":\"client_credentials\"}"
+        }
+
+        $.ajax(settings).done(function (response) {
+            $.ajaxSetup({
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + response.access_token);
+                }
+            });
+        });
+
+        
+
         $('#carouselExampleIndicators').carousel({
             interval: 2000
         })

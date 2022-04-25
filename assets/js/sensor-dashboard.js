@@ -47,11 +47,11 @@
                     enabled: true,
                     easing: 'linear',
                     dynamicAnimation: {
-                        speed: 999
+                        speed: 1000
                     }
                 },
                 toolbar: {
-                    show: false
+                    show: true
                 },
                 zoom: {
                     enabled: false

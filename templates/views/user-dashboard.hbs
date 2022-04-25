@@ -111,8 +111,8 @@
       <nav class="sidebar sidebar-offcanvas" id="sidebar" style="background: #fff;">
         <ul class="nav mb-3">
           <li class="nav-item">
-            <div class="d-flex sidebar-profile pb-0">
-              <marquee behavior="slide" direction="left">
+            <div class="d-flex sidebar-profile pb-4">
+              <marquee behavior="scroll" direction="left">
                 <img src="https://supportportal.thalesgroup.com/5a3c6ac4db40f810e615d3e05b96196c.iix" height="60"
                   alt="Natural" />
               </marquee>
@@ -229,8 +229,8 @@
         <!-- partial:partials/_footer.html -->
         <footer class="footer">
           <div class="d-sm-flex justify-content-center justify-content-sm-between">
-            <span class="text-center text-sm-left d-block d-sm-inline-block">Copyright © <a href="/login"
-                target="_blank">demo.com</a> 2022</span>
+            <span class="text-center text-sm-left d-block d-sm-inline-block">Copyright © <a href="javascript:void(0);"
+                >trixell-demo.com</a> 2022</span>
           </div>
         </footer>
         <!-- partial -->
@@ -252,7 +252,7 @@
           <form class="forms-sample" method="post" id="userDetailsForm">
             <div class="modal-body">
               <div class="form-group">
-                <label class="form-label" for="firstName">First Name</label>
+                <label class="form-label required" for="firstName">First Name</label>
                 <input type="text" name="firstName" class="form-control" id="firstName" placeholder="First Name"
                   required>
               </div>
@@ -282,18 +282,21 @@
                 </div>
               </div>
               <div class="form-group">
-                <label class="form-label" for="email">Email</label>
+                <label class="form-label required" for="email">Email</label>
                 <input type="email" name="email" class="form-control" id="email" placeholder="Email" required>
               </div>
               <div class="form-group">
-                <label class="form-label" for="phoneNumber">Phone Number</label>
+                <label class="form-label required" for="phoneNumber">Phone Number</label>
                 <input type="text" name="phoneNumber" class="form-control" id="phoneNumber" placeholder="Phone Number"
                   required>
               </div>
               <div class="form-group">
-                <label class="form-label" for="update-user-dob">Date of Birth</label>
+                <label class="form-label required" for="update-user-dob">Date of Birth</label>
                 <input type="text" name="dob" class="form-control" id="update-user-dob" placeholder="dd-mm-yyyy"
                   required style="width: 100%;">
+              </div>
+              <div>
+                <label class="form-label"><span class="required"></span> marked fields are mandatory</label>
               </div>
             </div>
             <div class="modal-footer">
@@ -321,7 +324,7 @@
                   <span id="check"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label class="form-label" for="firstName">First Name</label>
+                  <label class="form-label required" for="firstName">First Name</label>
                   <input type="text" name="firstName" class="form-control" id="firstName" placeholder="First Name"
                     required>
                 </div>
@@ -330,16 +333,16 @@
                   <input type="text" name="lastName" class="form-control" id="lastName" placeholder="Last Name">
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label class="form-label" for="phoneNumber">Phone Number</label>
+                  <label class="form-label required" for="phoneNumber">Phone Number</label>
                   <input type="text" name="phoneNumber" class="form-control" id="phoneNumber" placeholder="Phone Number"
                     required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label class="form-label" for="email">Email</label>
+                  <label class="form-label required" for="email">Email</label>
                   <input type="email" name="email" class="form-control" id="email" placeholder="Email" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label class="form-label" for="add-user-dob">Date of Birth</label>
+                  <label class="form-label required" for="add-user-dob">Date of Birth</label>
                   <input type="text" name="dob" class="form-control" id="add-user-dob" placeholder="dd-mm-yyyy" required
                     style="width: 100%;">
                 </div>
@@ -365,12 +368,12 @@
                   </div>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label class="form-label" for="password">Password</label>
+                  <label class="form-label required" for="password">Password</label>
                   <input type="password" name="password" class="form-control" id="password" placeholder="Password"
                     required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label class="form-label" for="confirmPassword">Confirm Password</label>
+                  <label class="form-label required" for="confirmPassword">Confirm Password</label>
                   <input type="password" name="confirmPassword" class="form-control" id="confirmPassword"
                     placeholder="Confirm Password" required>
                 </div>
@@ -390,6 +393,9 @@
                   <label class="form-label" for="pinCode">Pin Code</label>
                   <input type="text" name="pinCode" class="form-control" id="pinCode" placeholder="Pin Code">
                 </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"><span class="required"></span> marked fields are mandatory</label>
+                </div>
               </div>
             </div>
             <div class="modal-footer">
@@ -403,20 +409,9 @@
     <!-- base:js -->
     <script src="vendors/js/vendor.bundle.base.js"></script>
     <!-- endinject -->
-    <!-- Plugin js for this page-->
-    <!-- End plugin js for this page-->
-    <!-- inject:js -->
-    <script src="js/off-canvas.js"></script>
-    <script src="js/hoverable-collapse.js"></script>
-    <script src="js/template.js"></script>
-    <script src="js/settings.js"></script>
-    <script src="js/todolist.js"></script>
-    <!-- endinject -->
-    <!-- plugin js for this page -->
-    <script src="vendors/progressbar.js/progressbar.min.js"></script>
-    <script src="vendors/chart.js/Chart.min.js"></script>
-    <!-- End plugin js for this page -->
     <!-- Custom js for this page-->
+    <script src="js/template.js"></script>
+    <script src="js/off-canvas.js"></script>
     <script type="text/javascript" src="js/dashboard.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
